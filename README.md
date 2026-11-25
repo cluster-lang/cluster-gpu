@@ -18,6 +18,22 @@
 
 ---
 
+## 💻 Supported Platforms & Prerequisites
+
+> [!IMPORTANT]
+> **Linux x86-64 (Tested on Debian 13 Trixie) Only** — Precompiled binaries in [`bin/`](bin/) are **Linux x86-64 ELF executables** targeting **Debian 13** (`GLIBC >= 2.38`, X11/GLX, and OpenGL 4.3+ compute shaders).
+> - **Windows**: **Not supported natively** (Linux ELF binaries + X11/GLX + POSIX threads/sockets). May work only inside **WSL2** with WSLg/X11 and an OpenGL 4.3+ driver (untested).
+> - **macOS**: **Not supported** (macOS uses Mach-O binaries, deprecated OpenGL at 4.1 without OpenGL 4.3 compute shaders/SSBOs, and lacks native GLX).
+
+### System Requirements (Fresh Debian 13 Clone)
+- **GPU Web UI (`./cl gpu-ui --port 8888`)**: Works immediately after cloning with precompiled [`bin/cl`](bin/cl); requires X11 (`libx11-6`), OpenGL 4.3+ (`libgl1` / NVIDIA or Nouveau driver with SSBO support), and `curl` / `wget` for [`example-model.sh`](example-model.sh).
+- **Compiling & Running `.cl` Programs (`./cl run` / `./cl build`)**: Uses precompiled [`bin/cl2`](bin/cl2) + [`lib/runtime/concurrency.o`](lib/runtime/concurrency.o) and links via system **`clang`**:
+  ```bash
+  sudo apt update && sudo apt install -y clang libx11-6 libgl1 curl
+  ```
+
+---
+
 ## 🌟 Key Capabilities
 
 1. **Instant Clean Startup (On-Demand Loading)**:
