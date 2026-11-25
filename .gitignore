@@ -16,6 +16,7 @@
 *.a
 *.so
 !lib/runtime/*.o
+!lib/runtime/*.so
 
 # Build & compiler caches
 .cl_cache/

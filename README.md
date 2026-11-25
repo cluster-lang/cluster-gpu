@@ -1,20 +1,21 @@
-# 🚀 Cluster GPU: Legacy GPU Hardware VRAM Unlock & Universal Neural Runtime
+<div align="center">
 
-```
-   ____ _           _              ____ ____  _   _ 
-  / ___| |_   _ ___| |_ ___ _ __  / ___|  _ \| | | |
- | |   | | | | / __| __/ _ \ '__|| |  _| |_) | | | |
- | |___| | |_| \__ \ ||  __/ |   | |_| |  __/| |_| |
-  \____|_|\__,_|___/\__\___|_|    \____|_|    \___/ 
-```
+# Cluster GPU
+
+### Legacy GPU Hardware VRAM Unlock & Native Neural Runtime
+
+*On-demand `.gguf` / `.clm` / `.onnx` VRAM allocation, OpenGL 4.3 compute shader dispatch, and instant offloading for legacy GPUs (NVIDIA GeForce GT 610 / GF119 / NVD9).*
 
 [![Language: Cluster](https://img.shields.io/badge/Language-Cluster%20(.cl%20%2F%20.zk)-00ff88?style=flat-square)](https://github.com/cluster-lang)
 [![Hardware: GT 610](https://img.shields.io/badge/Hardware-NVIDIA%20GeForce%20GT%20610-76b900?style=flat-square)](https://www.nvidia.com)
 [![VRAM: 2039 MB](https://img.shields.io/badge/Dedicated%20VRAM-2039%20MB%20DDR3-00d4ff?style=flat-square)]()
+[![Zero Clang](https://img.shields.io/badge/Zero%20Clang-Pure%20.zk%20Native%20ELF64-7c3aed?style=flat-square)]()
 [![Zero Python](https://img.shields.io/badge/Python%20Files-0%20(Pure%20Native)-ff007f?style=flat-square)]()
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](LICENSE)
 
-> **Breakthrough Achievement**: Unlocking the physical **2,039 MB discrete DDR3 VRAM** and **48 Fermi CUDA cores** of legacy GPUs (NVIDIA GeForce GT 610 / GF119 / NVD9) for on-demand model uploading, dynamic VRAM allocation, instant offloading, and autoregressive neural chat.
+</div>
+
+> **Overview**: Unlocks the physical **2,039 MB discrete DDR3 VRAM** and **48 Fermi CUDA cores** of legacy GPUs via zero-dependency Cluster Language native compilation (`./cl`), real-time browser upload UI (`./cl gpu-ui`), PCIe DMA transfer into OpenGL 4.3 SSBOs, and one-click VRAM offloading.
 
 ---
 
@@ -22,15 +23,16 @@
 
 > [!IMPORTANT]
 > **Linux x86-64 (Tested on Debian 13 Trixie) Only** — Precompiled binaries in [`bin/`](bin/) are **Linux x86-64 ELF executables** targeting **Debian 13** (`GLIBC >= 2.38`, X11/GLX, and OpenGL 4.3+ compute shaders).
-> - **Windows**: **Not supported natively** (Linux ELF binaries + X11/GLX + POSIX threads/sockets). May work only inside **WSL2** with WSLg/X11 and an OpenGL 4.3+ driver (untested).
-> - **macOS**: **Not supported** (macOS uses Mach-O binaries, deprecated OpenGL at 4.1 without OpenGL 4.3 compute shaders/SSBOs, and lacks native GLX).
+> - **Windows**: **Not supported natively** for GPU VRAM execution (X11/GLX + POSIX). *(Note: [`cl`](bin/cl) supports pure `.zk` `--target win64` cross-compilation of CLI `.exe` apps.)*
+> - **macOS**: **Not supported** (Mach-O binaries, deprecated OpenGL at 4.1 without compute shaders/SSBOs, and no native GLX).
 
-### System Requirements (Fresh Debian 13 Clone)
-- **GPU Web UI (`./cl gpu-ui --port 8888`)**: Works immediately after cloning with precompiled [`bin/cl`](bin/cl); requires X11 (`libx11-6`), OpenGL 4.3+ (`libgl1` / NVIDIA or Nouveau driver with SSBO support), and `curl` / `wget` for [`example-model.sh`](example-model.sh).
-- **Compiling & Running `.cl` Programs (`./cl run` / `./cl build`)**: Uses precompiled [`bin/cl2`](bin/cl2) + [`lib/runtime/concurrency.o`](lib/runtime/concurrency.o) and links via system **`clang`**:
+### System Requirements (Fresh Debian 13 Clone — Zero `clang` Required)
+- **GPU Web UI (`./cl gpu-ui --port 8888`)** & **Compiling/Running `.cl` Programs (`./cl run` / `./cl build`)**:
+  Works **without installing `clang`, `gcc`, or `lld`** — [`bin/cl2`](bin/cl2) compiles directly in pure `.zk` to native x86-64 ELF64 and dynamically links against [`lib/runtime/libcluster_rt.so`](lib/runtime/libcluster_rt.so).
   ```bash
-  sudo apt update && sudo apt install -y clang libx11-6 libgl1 curl
+  sudo apt update && sudo apt install -y libx11-6 libgl1 curl
   ```
+  *(Optional: install `clang` only if you explicitly want `--llvm`, `-O3`, `--lto`, or `--tsan` via [`lib/runtime/concurrency.o`](lib/runtime/concurrency.o).)*
 
 ---
 
