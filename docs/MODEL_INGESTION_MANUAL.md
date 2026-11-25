@@ -1,83 +1,50 @@
-# Universal Model Ingestion & VRAM Control Manual
+# Universal Model Upload & VRAM Control Manual
 
-The **Cluster GPU Controller** provides a comprehensive Graphical Dashboard and REST API allowing users to push, upload, load, test, and offload **any neural model** directly to legacy GPU hardware VRAM.
+The **Cluster GPU Controller** (`./cl gpu-ui`) starts instantaneously with an empty VRAM pool so you can upload and manage **any model** according to your needs.
 
 ---
 
-## 1. Launching the Web UI
+## 1. Download an Official Chat Model (Optional)
 
-Run the following command in terminal:
+If you do not already have a `.gguf` model on your device, run the included helper script:
 
 ```bash
-cl gpu-ui --port 8888
+./example-model.sh
 ```
 
-Open your browser to:
+This fetches the official HuggingFace **`Qwen/Qwen2.5-0.5B-Instruct-GGUF`** (`models/qwen2.5-0.5b-instruct-q4_0.gguf`, ~409 MB), which fits comfortably in 2 GB legacy VRAM and answers user prompts cleanly.
+
+*(For a larger model, pass `1.5b`: `./example-model.sh 1.5b`)*
+
+---
+
+## 2. Launch the Web UI
+
+```bash
+./cl gpu-ui --port 8888
 ```
-http://127.0.0.1:8888
-```
+
+Open **`http://127.0.0.1:8888`** in your browser. Startup is instant because no model is pre-loaded on boot.
 
 ---
 
-## 2. Ingesting Models into GPU VRAM
+## 3. Upload, Chat & Offload
 
-The interface supports three ingestion paths:
-
-### Method A: Quick Presets (1-Click)
-Click any preset chip:
-- **🧠 Qwen 2.5 0.5B (GGUF)**: 408.87 MB Q4_0 quantized weights.
-- **🧠 Qwen 2.5 0.5B (CLM)**: 304.98 MB Native INT4 Cluster model.
-- **📄 Indra-OCR Det**: 381 KB ONNX document text detection network.
-- **📄 Indra-OCR Rec**: 4.9 MB ONNX text recognition model.
-
-### Method B: Local File Path
-1. Enter the absolute or relative path to any model file on disk in the input box:
-   ```
-   /path/to/any/model.gguf
-   /path/to/any/model.clm
-   /path/to/any/model.onnx
-   ```
-2. Click **⚡ Load** to trigger PCIe DMA allocation into GT 610 VRAM.
-
-### Method C: Browser Drag & Drop Upload
-1. Drag and drop any `.gguf`, `.clm`, or `.onnx` file into the upload zone, or click to browse.
-2. The web server streams the file directly to `models/uploaded/<filename>`.
-3. The server immediately allocates a hardware OpenGL 4.3 SSBO buffer in GT 610 VRAM and mounts it as the active inference engine!
+1. **Upload Model**: Click or drag & drop any `.gguf`, `.clm`, `.onnx`, or weight file into the Upload box.
+   - Real-time upload progress tracks transfer from browser to `models/uploaded/`.
+   - The controller allocates a hardware OpenGL 4.3 SSBO directly in GPU VRAM and frees host CPU RAM.
+   - For `.gguf` chat models, the runtime automatically prepares the CLM inference engine so you can chat immediately.
+2. **Test / Ask Questions**: Type any prompt in the **Model Test & Question Answering Terminal** and click **🚀 Ask Model (GPU)**.
+3. **Offload Model**: Click **🧹 Offload Model from GPU VRAM** whenever you want to free GPU memory (`0.00 MB` allocated).
 
 ---
 
-## 3. Real-Time Model Testing & Chat
-
-1. In the **Live Model Inference Terminal**, enter any question or prompt:
-   - *"What is Cluster Language?"*
-   - *"Explain how discrete VRAM allocation works on Fermi GPUs."*
-   - *"Summarize quantum computing in 2 sentences."*
-2. Click **🚀 Ask Model on GPU** (or press Enter).
-3. The GT 610 48 CUDA cores execute forward inference directly on the VRAM resident weights.
-4. The generated response and the exact execution time in milliseconds (`⚡ XXXX ms`) will be displayed in real time.
-
----
-
-## 4. Offloading from GPU VRAM
-
-To reclaim GPU memory or swap to a different model:
-1. Click **🧹 Offload from GPU**.
-2. The server calls `zk_gpu_vram_free(buf_id)` and deallocates the hardware SSBO.
-3. The VRAM meter immediately drops to `0.00 MB` allocated, returning 100% of memory to the available pool.
-
----
-
-## 5. REST API Reference
+## 4. REST API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/status` | Returns GPU VRAM telemetry (Allocated MB, Free MB, Active Model, Buffers). |
+| `GET` | `/api/status` | Returns GPU VRAM telemetry (Allocated MB, Free MB, Active Model, SSBO ID). |
 | `POST` | `/api/upload_model?filename=xyz` | Uploads binary model stream to `models/uploaded/xyz`. |
-| `POST` | `/api/load_model` | Loads model at given path into GT 610 hardware VRAM SSBO. |
+| `POST` | `/api/load_model` | Loads model at given path into GPU hardware VRAM SSBO (auto-packs GGUF for chat). |
+| `POST` | `/api/chat` | Runs autoregressive neural inference on the currently loaded GPU model. |
 | `POST` | `/api/offload_model` | Deallocates model SSBO from VRAM and reclaims hardware memory. |
-| `POST` | `/api/chat` | Executes real-time autoregressive neural inference on active model. |
-| `POST` | `/api/load_det` | Loads Indra-OCR detection model into VRAM. |
-| `POST` | `/api/load_rec` | Loads Indra-OCR recognition model into VRAM. |
-| `POST` | `/api/alloc_64mb` | Allocates 64 MB tensor buffer in VRAM. |
-| `POST` | `/api/dispatch_cuda` | Dispatches compute shader across 48 Fermi CUDA cores. |
-| `POST` | `/api/free_all` | Flushes all active SSBO buffers from GPU VRAM. |

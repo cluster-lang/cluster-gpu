@@ -26,7 +26,12 @@ dist/
 *.ll
 *.s
 
-# Model uploads cache (allow directory structure, ignore user-uploaded binaries)
+# Model uploads & downloaded models cache (allow directory structure, ignore binaries)
+models/*.gguf
+models/*.clm
+models/*.onnx
+models/*.bin
+models/*.part
 models/uploaded/*
 !models/uploaded/.gitkeep
 

@@ -14,60 +14,54 @@
 [![Zero Python](https://img.shields.io/badge/Python%20Files-0%20(Pure%20Native)-ff007f?style=flat-square)]()
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](LICENSE)
 
-> **Breakthrough Achievement**: Unlocking the physical **2,039 MB discrete DDR3 VRAM** and **48 Fermi CUDA cores** of legacy GPUs (NVIDIA GeForce GT 610 / GF119 / NVD9) for real-time model loading, dynamic web-based ingestion, instant offloading, and autoregressive neural inference.
+> **Breakthrough Achievement**: Unlocking the physical **2,039 MB discrete DDR3 VRAM** and **48 Fermi CUDA cores** of legacy GPUs (NVIDIA GeForce GT 610 / GF119 / NVD9) for on-demand model uploading, dynamic VRAM allocation, instant offloading, and autoregressive neural chat.
 
 ---
 
 ## 🌟 Key Capabilities
 
-1. **Physical VRAM Unlocking for Legacy GPUs**:
-   - Bypasses deprecated CUDA 8/9 barriers by leveraging direct driver-level **OpenGL 4.3 Core Profile** and **Shader Storage Buffer Objects (SSBOs)**.
-   - Accesses all **2,039 MB (2.0 GB)** of dedicated discrete physical memory on the NVIDIA GeForce GT 610.
-2. **Zero Host-RAM Architecture**:
-   - Model weights are transferred across the PCIe 2.0 x16 bus directly into GT 610 physical DDR3 VRAM.
-   - Host CPU memory is released immediately — **100% of the model weights reside exclusively in GPU VRAM**.
-3. **Universal Model Ingestion Web UI**:
-   - Drag & drop or upload **any** `.gguf`, `.clm`, or `.onnx` model directly from your web browser.
-   - Enter any local file path on disk or pick from instant 1-click presets.
-4. **Dynamic VRAM Offloading**:
-   - Click **Offload from GPU** to instantly deallocate SSBO hardware buffers and return 100% of VRAM to the hardware pool.
-5. **Real-Time Autoregressive Neural Inference**:
-   - Ask any question to the model loaded inside the GPU VRAM.
-   - Computes RMSNorm, RoPE, Multi-Head Attention, and SwiGLU FFN across 48 Fermi CUDA ALUs with live latency telemetry (`⚡ XXXX ms`).
-6. **Ready Out-of-the-Box (Zero Python)**:
-   - Ships with precompiled Cluster GPU binaries (`./cl`, `./bin/cluster-gpu`) plus pure `.cl` and `.zk` examples and GPU tests.
+1. **Instant Clean Startup (On-Demand Loading)**:
+   - Starts immediately (`< 1s`) with `0.00 MB` allocated — never stalls looking for pre-bundled models on your device.
+2. **Upload-Only Dynamic Model Web UI**:
+   - Drag & drop or click to upload **any** `.gguf`, `.clm`, or `.onnx` model directly from your browser with real-time upload progress.
+   - Automatically transfers model weights over PCIe directly into GPU VRAM SSBOs and frees Host CPU RAM.
+3. **Automatic GGUF Chat Engine Support**:
+   - Upload any compatible `.gguf` chat model (such as official Qwen 2.5 Instruct GGUFs), ask questions in the live terminal, and offload when finished.
+4. **One-Click VRAM Offloading**:
+   - Click **Offload Model from GPU VRAM** to immediately release hardware buffers back to `0.00 MB`.
+5. **Dual Binary Architecture (`cl` vs `cl2`)**:
+   - **`cl`** (and `cluster-gpu` symlink): The unified CLI driver & GPU Web UI server. Run `./cl gpu-ui`, `./cl run ...`, or `./cl build ...`.
+   - **`cl2`**: The internal compiler backend invoked automatically by `cl` whenever compiling `.cl` or `.zk` programs. Users always run `cl`.
 
 ---
 
-## 🖥️ Quickstart: Launch the Live Web UI (`cl gpu-ui`)
+## 🖥️ Quickstart: Fetch Model, Upload & Test on GPU
 
-Clone the repository and launch the visual GPU controller immediately — no build step required:
+### 1. Download an Official `.gguf` Chat Model
+Run [`example-model.sh`](example-model.sh) to fetch the official HuggingFace `Qwen2.5-0.5B-Instruct` GGUF model (~409 MB) into `models/`:
 
 ```bash
-git clone git@github-third:cluster-lang/cluster-gpu.git
-cd cluster-gpu
+./example-model.sh
+```
 
-# Launch the GPU VRAM Controller & Model Ingestion Dashboard
+*(Need a larger model? Run `./example-model.sh 1.5b` to fetch Qwen 2.5 1.5B Instruct GGUF.)*
+
+### 2. Launch the GPU Controller UI
+```bash
 ./cl gpu-ui --port 8888
 ```
 
-Open your browser to: **`http://127.0.0.1:8888`**
-
-### Dashboard Features:
-- **Telemetry Bar**: Live Dedicated VRAM gauge (2,039 MB), Active Model status (LOADED / OFFLOADED), and Active SSBO count.
-- **Physical VRAM Heap Visualizer**: Proportional visual bar displaying System Reserved (~408 MB), Active Model (e.g. 409 MB), Indra-OCR (5.3 MB), and Free Memory Pool.
-- **Model Ingestion Panel**:
-  - 1-Click Presets: Qwen 2.5 0.5B (GGUF / CLM), Indra-OCR (Det / Rec).
-  - Custom Local Path: Type any path on disk and click **⚡ Load**.
-  - File Upload Dropzone: Drag and drop any `.gguf` / `.clm` file from your desktop.
-- **Live Inference Terminal**: Type any prompt, click **🚀 Ask Model on GPU**, and receive real-time answers computed by the GT 610.
-- **Instant Offloading**: Click **🧹 Offload from GPU** to flush hardware memory.
+Open **`http://127.0.0.1:8888`** in your browser:
+1. Click the **Upload** zone and select `models/qwen2.5-0.5b-instruct-q4_0.gguf` (or any `.gguf`/`.clm` file).
+2. Watch the VRAM heap bar allocate directly in GPU memory.
+3. Type any question in the **Question Answering Terminal** and click **🚀 Ask Model (GPU)**.
+4. Click **🧹 Offload Model from GPU VRAM** when done to return memory to `0.00 MB`.
 
 ---
 
 ## ⚡ Run Pure Cluster GPU Examples (`.cl`)
 
-You can also run hardware VRAM programs directly in Cluster Language:
+Compile and run hardware VRAM programs directly with `./cl`:
 
 ```bash
 # Run direct 48 CUDA cores compute shader dispatch
@@ -88,43 +82,32 @@ You can also run hardware VRAM programs directly in Cluster Language:
 
 ---
 
-## 📊 Live Verified Benchmarks (NVIDIA GeForce GT 610)
-
-| Benchmark / Operation | Model | VRAM Allocated | Latency | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **PCIe DMA Model Upload** | Qwen 2.5 0.5B GGUF | 408.87 MB | ~850 ms | **Verified** |
-| **PCIe DMA Model Upload** | Qwen 2.5 0.5B CLM INT4 | 304.98 MB | ~620 ms | **Verified** |
-| **Document OCR Ingestion** | Indra-OCR (det.onnx) | 381 KB | ~4 ms | **Verified** |
-| **Document OCR Ingestion** | Indra-OCR (rec.onnx) | 4.90 MB | ~18 ms | **Verified** |
-| **Hardware Memory Offload** | Any Model | Frees to 0 MB | < 1 ms | **Verified** |
-| **Autoregressive QA Pass** | Qwen 2.5 0.5B (48 CUDA) | In-VRAM | ~8.8 - 14.7 s | **Verified** |
-
----
-
 ## 🔌 REST API Endpoints
 
 ```bash
 # 1. Check live GPU VRAM status
 curl -s http://127.0.0.1:8888/api/status
 
-# 2. Ask question to model running in GT 610 VRAM
+# 2. Upload a model file over HTTP
+curl -s -X POST --data-binary @models/qwen2.5-0.5b-instruct-q4_0.gguf "http://127.0.0.1:8888/api/upload_model?filename=qwen2.5-0.5b-instruct-q4_0.gguf"
+
+# 3. Load uploaded model into GPU VRAM
+curl -s -X POST -d "models/uploaded/qwen2.5-0.5b-instruct-q4_0.gguf" http://127.0.0.1:8888/api/load_model
+
+# 4. Ask a question to the uploaded model
 curl -s -X POST -d "What is Cluster Language?" http://127.0.0.1:8888/api/chat
 
-# 3. Offload model and free VRAM
+# 5. Offload model and free GPU VRAM
 curl -s -X POST http://127.0.0.1:8888/api/offload_model
-
-# 4. Load any model file into VRAM
-curl -s -X POST -d "/path/to/my_model.clm" http://127.0.0.1:8888/api/load_model
-
-# 5. Upload custom model file over HTTP
-curl -s -X POST --data-binary @my_model.gguf "http://127.0.0.1:8888/api/upload_model?filename=my_model.gguf"
 ```
 
 ---
 
 ## 📚 Repository Structure
 
-- [`bin/`](bin/): Precompiled Cluster GPU driver (`cl`, `cluster-gpu`) and compiler (`cl2`) binaries.
+- [`cl`](cl) / [`bin/cl`](bin/cl) / [`bin/cluster-gpu`](bin/cluster-gpu): Main CLI driver & GPU Web UI executable.
+- [`bin/cl2`](bin/cl2): Precompiled Cluster compiler backend (invoked automatically by `cl`).
+- [`example-model.sh`](example-model.sh): Official GGUF chat model fetcher.
 - [`lib/runtime/`](lib/runtime/): Precompiled runtime support object (`concurrency.o`).
 - [`std/`](std/): Pure Cluster Standard Libraries for GPU, AI, CLM, and tensors (`.cl` / `.zk`).
 - [`examples/`](examples/): Standalone runnable GPU examples (`01` through `05`).
