@@ -1,0 +1,98 @@
+// ==============================================================================
+// test_m18_adaptor.zk — Unit Test for Milestone 18: Cluster AI Low-Rank Adapter (.clad)
+// & 2-bit Quantization Mode (CLM_QUANT_INT2) & Depth Mode Precision Restoration
+// ==============================================================================
+
+fn main() -> int:
+    println("--- Testing Milestone 18: Cluster AI Low-Rank Adapter (.clad) ---")
+
+    // 1. Open 2-bit Base Model
+    m := clm_open("tests/fixtures/tiny_2bit.clm")
+    if m == null:
+        println("FAIL: Failed to open 2-bit base model")
+        return 1
+
+    params := clm_total_params(m)
+    tcount := clm_tensor_count(m)
+    println("Base Model 2-bit params: " + to_text(params) + ", tensors: " + to_text(tcount))
+
+    if params != 80:
+        println("FAIL: Expected 80 parameters, got " + to_text(params))
+        clm_close(m)
+        return 1
+
+    // 2. Check 2-bit Quantization Type (CLM_QUANT_INT2 = 4)
+    dt := clm_tensor_dtype(m, 0)
+    println("Tensor 0 dtype: " + to_text(dt) + " (expected 4 for CLM_QUANT_INT2)")
+    if dt != 4:
+        println("FAIL: Expected dtype 4 (CLM_QUANT_INT2)")
+        clm_close(m)
+        return 1
+
+    // 3. Verify Non-Depth Mode Chat
+    c1 := clm_chat(m, "Hello Cluster")
+    println("Non-Depth Chat: " + c1)
+
+    // 4. Decompile Tensor in Non-Depth Mode
+    t_base := clm_get_tensor(m, "model.layers.0.mlp.gate_proj.weight")
+    if t_base == null:
+        println("FAIL: Failed to get base tensor")
+        clm_close(m)
+        return 1
+    w_base_0 := tensor_get(t_base, 0, 0)
+    tensor_free(t_base)
+
+    // 5. Attach Adapter (.clad)
+    att_res := clm_attach_adaptor(m, "tests/fixtures/tiny_adapter.clad")
+    println("Attach adapter status: " + to_text(att_res))
+    if att_res != 0:
+        println("FAIL: Failed to attach adapter")
+        clm_close(m)
+        return 1
+
+    has_ad := clm_has_adaptor(m)
+    rank := clm_adaptor_rank(m)
+    is_depth := clm_is_depth_mode(m)
+    println("Adapter attached: " + to_text(has_ad) + ", rank: " + to_text(rank) + ", depth mode: " + to_text(is_depth))
+
+    if has_ad != 1 or rank != 2 or is_depth != 1:
+        println("FAIL: Expected has_ad=1, rank=2, is_depth=1")
+        clm_close(m)
+        return 1
+
+    // 6. Verify Depth Mode Chat
+    c2 := clm_chat(m, "Hello Cluster in Depth Mode")
+    println("Depth Mode Chat: " + c2)
+
+    // 7. Decompile Tensor in Depth Mode (High Precision Restored)
+    t_depth := clm_get_tensor(m, "model.layers.0.mlp.gate_proj.weight")
+    if t_depth == null:
+        println("FAIL: Failed to get depth restored tensor")
+        clm_close(m)
+        return 1
+    w_depth_0 := tensor_get(t_depth, 0, 0)
+    tensor_free(t_depth)
+
+    // 8. Toggle Depth Mode
+    clm_set_depth_mode(m, 0)
+    if clm_is_depth_mode(m) != 0:
+        println("FAIL: Depth mode toggle off failed")
+        clm_close(m)
+        return 1
+
+    clm_set_depth_mode(m, 1)
+    if clm_is_depth_mode(m) != 1:
+        println("FAIL: Depth mode toggle on failed")
+        clm_close(m)
+        return 1
+
+    // 9. Detach Adapter
+    clm_detach_adaptor(m)
+    if clm_has_adaptor(m) != 0:
+        println("FAIL: Expected has_adaptor == 0 after detach")
+        clm_close(m)
+        return 1
+
+    clm_close(m)
+    println("PASS: Milestone 18 Cluster AI Adapter & 2-bit Depth Mode Verified!")
+    return 0

@@ -1,0 +1,144 @@
+import "std/ai.cl"
+
+fn test_safetensors_inspection():
+    m := model_open("tests/fixtures/ai/student_model.safetensors")
+    fmt := model_format(m)
+    if fmt != MODEL_FORMAT_SAFETENSORS:
+        put "FAIL: expected SafeTensors format"
+        sys_exit(1)
+    
+    fmt_str := model_format_name(fmt)
+    if fmt_str != "SafeTensors (HuggingFace)":
+        put "FAIL: unexpected format name"
+        sys_exit(1)
+
+    count := model_tensor_count(m)
+    if count != 4:
+        put "FAIL: expected 4 tensors"
+        sys_exit(1)
+
+    t0 := model_tensor_name(m, 0)
+    if t0 != "model.embed_tokens.weight":
+        put "FAIL: unexpected tensor 0 name"
+        sys_exit(1)
+
+    r0 := model_tensor_rows(m, 0)
+    c0 := model_tensor_cols(m, 0)
+    if r0 != 8 or c0 != 4:
+        put "FAIL: unexpected shape for embed_tokens"
+        sys_exit(1)
+
+    dt0 := model_tensor_dtype(m, 0)
+    if dt0 != DTYPE_F32:
+        put "FAIL: unexpected dtype for embed_tokens"
+        sys_exit(1)
+
+    model_close(m)
+    put "PASS: SafeTensors inspection"
+
+fn test_gguf_inspection():
+    m := model_open("tests/fixtures/ai/test_model.gguf")
+    fmt := model_format(m)
+    if fmt != MODEL_FORMAT_GGUF:
+        put "FAIL: expected GGUF format"
+        sys_exit(1)
+
+    fmt_str := model_format_name(fmt)
+    if fmt_str != "GGUF (llama.cpp)":
+        put "FAIL: unexpected format name for GGUF"
+        sys_exit(1)
+
+    count := model_tensor_count(m)
+    if count != 2:
+        put "FAIL: expected 2 tensors in GGUF fixture"
+        sys_exit(1)
+
+    t0 := model_tensor_name(m, 0)
+    if t0 != "blk.0.ffn_gate.weight":
+        put "FAIL: unexpected GGUF tensor 0 name"
+        sys_exit(1)
+
+    t := model_get_tensor(m, t0)
+    if t.rows() != 4 or t.cols() != 4:
+        put "FAIL: unexpected GGUF tensor dimensions"
+        sys_exit(1)
+
+    model_close(m)
+    put "PASS: GGUF inspection"
+
+fn test_tensor_extraction_and_ops():
+    m := model_open("tests/fixtures/ai/student_model.safetensors")
+    w := model_get_tensor(m, "model.layers.0.mlp.down_proj.weight")
+    if w.rows() != 4 or w.cols() != 4:
+        put "FAIL: unexpected dimensions for down_proj weight"
+        sys_exit(1)
+
+    // Milestone 14 Tensor GEMM: w @ w
+    w2 := w @ w
+    if w2.rows() != 4 or w2.cols() != 4:
+        put "FAIL: unexpected matmul shape"
+        sys_exit(1)
+
+    model_close(m)
+    put "PASS: Native tensor extraction and GEMM operations"
+
+fn test_cosine_similarity_and_blending():
+    s := model_open("tests/fixtures/ai/student_model.safetensors")
+    t := model_open("tests/fixtures/ai/teacher_model.safetensors")
+
+    s_w := model_get_tensor(s, "model.layers.0.mlp.down_proj.weight")
+    t_w := model_get_tensor(t, "model.layers.0.mlp.down_proj.weight")
+
+    sim := model_cosine_similarity(s_w, t_w)
+    if sim < 0.99:
+        put "FAIL: expected cosine similarity > 0.99"
+        sys_exit(1)
+
+    blended := model_blend(s_w, t_w, 0.5)
+    if blended.rows() != 4 or blended.cols() != 4:
+        put "FAIL: unexpected blended shape"
+        sys_exit(1)
+
+    sim_b := model_cosine_similarity(s_w, blended)
+    if sim_b <= sim:
+        put "FAIL: blended tensor should be closer to student than teacher is"
+        sys_exit(1)
+
+    model_close(s)
+    model_close(t)
+    put "PASS: Cosine similarity and manifold weight blending"
+
+fn test_disk_to_disk_merge():
+    out_file := "/tmp/m15_test_merged.safetensors"
+    ret := model_merge("tests/fixtures/ai/student_model.safetensors", "tests/fixtures/ai/teacher_model.safetensors", out_file, 0.5)
+    if ret != 0:
+        put "FAIL: merge returned non-zero code"
+        sys_exit(1)
+
+    merged := model_open(out_file)
+    fmt := model_format(merged)
+    if fmt != MODEL_FORMAT_SAFETENSORS:
+        put "FAIL: expected SafeTensors format for merged model"
+        sys_exit(1)
+
+    count := model_tensor_count(merged)
+    if count != 4:
+        put "FAIL: expected 4 tensors in merged model"
+        sys_exit(1)
+
+    w := model_get_tensor(merged, "model.layers.0.mlp.down_proj.weight")
+    if w.rows() != 4 or w.cols() != 4:
+        put "FAIL: unexpected shape in merged tensor"
+        sys_exit(1)
+
+    model_close(merged)
+    sys_run("rm -f " + out_file)
+    put "PASS: Streaming disk-to-disk weight merge"
+
+fn main():
+    test_safetensors_inspection()
+    test_gguf_inspection()
+    test_tensor_extraction_and_ops()
+    test_cosine_similarity_and_blending()
+    test_disk_to_disk_merge()
+    put "=== ALL MILESTONE 15 AI MODEL SURGERY TESTS PASSED (.cl) ==="

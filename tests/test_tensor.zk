@@ -1,0 +1,61 @@
+put "=== Tensor Engine Test ==="
+
+// 1D tensor
+t1 := tensor_ones(4)
+put "1D ones: rows=" + to_text(tensor_rows(t1)) + " cols=" + to_text(tensor_cols(t1))
+
+val0 := tensor_get(t1, 0)
+put "get(0): " + to_text(val0)
+
+// 2D tensor
+t2 := tensor(3, 3)
+t2.set(0, 0, 1.0)
+t2.set(0, 1, 2.0)
+t2.set(0, 2, 3.0)
+t2.set(1, 0, 4.0)
+t2.set(1, 1, 5.0)
+t2.set(1, 2, 6.0)
+t2.set(2, 0, 7.0)
+t2.set(2, 1, 8.0)
+t2.set(2, 2, 9.0)
+put "2D tensor rows: " + to_text(tensor_rows(t2)) + " cols: " + to_text(tensor_cols(t2))
+put "get(1,1): " + to_text(tensor_get(t2, 1, 1))
+
+// Element-wise ops
+t3 := tensor_ones(2, 3)
+t4 := tensor_ones(2, 3)
+sum := tensor_add(t3, t4)
+put "Add ones+ones, get(0,0): " + to_text(tensor_get(sum, 0, 0))
+
+diff := tensor_sub(t3, t4)
+put "Sub ones-ones, get(0,0): " + to_text(tensor_get(diff, 0, 0))
+
+// Matrix multiplication
+a := tensor_ones(2, 3)
+b := tensor_ones(3, 4)
+c := tensor_matmul(a, b)
+put "Matmul (2x3)*(3x4): rows=" + to_text(tensor_rows(c)) + " cols=" + to_text(tensor_cols(c))
+put "get(0,0): " + to_text(tensor_get(c, 0, 0))
+
+// Power
+p := tensor_pow(t2, 2.0)
+put "Power: get(1,1): " + to_text(tensor_get(p, 1, 1))
+
+// Sum
+total := tensor_sum(t2)
+put "Sum of 1..9: " + to_text(total)
+
+// Broadcasting
+t5 := tensor(2, 3)
+t5.set(0, 0, 1.0)
+t5.set(0, 1, 2.0)
+t5.set(0, 2, 3.0)
+t5.set(1, 0, 4.0)
+t5.set(1, 1, 5.0)
+t5.set(1, 2, 6.0)
+
+scalar := tensor_ones(1)
+broadcast_add := tensor_add(t5, scalar)
+put "Broadcast add: get(0,0): " + to_text(tensor_get(broadcast_add, 0, 0)) + " get(1,2): " + to_text(tensor_get(broadcast_add, 1, 2))
+
+put "=== Tensor Test Complete ==="

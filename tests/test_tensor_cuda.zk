@@ -1,0 +1,30 @@
+put "=== CUDA/GPU Tensor Test ==="
+
+t1 := tensor_ones_cuda(2, 3)
+t2 := tensor_ones_cuda(2, 3)
+
+put "CUDA tensor 1 rows: " + to_text(tensor_rows(t1))
+put "CUDA tensor 2 cols: " + to_text(tensor_cols(t2))
+
+sum := tensor_add(t1, t2)
+put "CUDA add result get(0,0): " + to_text(tensor_get(sum, 0, 0))
+
+diff := tensor_sub(t1, t2)
+put "CUDA sub result get(0,0): " + to_text(tensor_get(diff, 0, 0))
+
+mul := tensor_mul(t1, t2)
+put "CUDA mul result get(0,0): " + to_text(tensor_get(mul, 0, 0))
+
+a := tensor_ones_cuda(2, 3)
+b := tensor_ones_cuda(3, 4)
+c := tensor_matmul(a, b)
+put "CUDA matmul result get(0,0): " + to_text(tensor_get(c, 0, 0))
+
+p := tensor_pow(t1, 3.0)
+put "CUDA pow result get(0,0): " + to_text(tensor_get(p, 0, 0))
+
+total := tensor_sum(t1)
+put "CUDA sum: " + to_text(total)
+
+put "=== CUDA/GPU Tensor Test Complete ==="
+put "DONE"

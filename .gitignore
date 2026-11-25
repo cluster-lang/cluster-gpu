@@ -1,0 +1,42 @@
+# Keep compiler and C/C++ implementation sources strictly private
+/cluster_compiler/
+/cluster_backend/
+/cluster-compiler-binary/
+/compiler/
+/driver/
+/runtime/
+/scripts/
+*.c
+*.cpp
+*.h
+*.hpp
+
+# Intermediate object files and libraries (allow precompiled runtime object)
+*.o
+*.a
+*.so
+!lib/runtime/*.o
+
+# Build & compiler caches
+.cl_cache/
+.zk_cache/
+.vscode/
+build/
+dist/
+*.ll
+*.s
+
+# Model uploads cache (allow directory structure, ignore user-uploaded binaries)
+models/uploaded/*
+!models/uploaded/.gitkeep
+
+# Temporary files & logs
+*.tmp
+*.log
+*~
+.DS_Store
+
+# Explicitly disallow python files
+*.py
+*.pyc
+__pycache__/

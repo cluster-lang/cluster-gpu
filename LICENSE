@@ -1,0 +1,60 @@
+Cluster Community & Fair-Source License (CCFL v2.0 / Strict-Distribution)
+
+Copyright (c) 2026 Mohammad Zaid (zk-mohammad) / Cluster Organization
+Official Repository: https://github.com/cluster-lang/cluster
+Author Account: https://github.com/zk-mohammad
+All rights reserved.
+
+1. PERMITTED INDEPENDENT, ACADEMIC & RESEARCH USE:
+Permission is hereby granted, free of charge, to any individual developer,
+freelance engineer, student, educator, academic researcher, non-profit
+organization, or scientific research group to obtain, download, test, run, and
+execute the official binary release of this software and associated documentation
+files (the "Software"), and to use the compiler binary to compile, build, test,
+and run Cluster programs, subject to the conditions herein.
+Any modification, alteration, patching, decompilation, or derivative compilation
+of the Software (including for academic, educational, or research purposes) strictly
+requires prior written permission and explicit authorization from the copyright holder.
+
+
+2. COMPILER INTEGRITY, ANTI-TAMPERING & REPRODUCTION RESTRICTIONS:
+The Cluster compiler, toolchain, and architecture belong exclusively to
+Mohammad Zaid (GitHub: zk-mohammad) and the official Cluster Organization
+(https://github.com/cluster-lang). 
+
+To protect compiler integrity, user security, and eliminate rogue compiler attacks:
+- Duplication, modification, patching, decompilation, binary surgery, or reverse
+  engineering of the compiler software and binary is STRICTLY PROHIBITED.
+- Producing derivative compiler binaries, releasing unauthorized binary clones,
+  launching unauthorized forks, or redistributing rogue compiler distributions
+  is STRICTLY FORBIDDEN.
+- Exactly ONE canonical binary distribution exists, officially published under
+  https://github.com/cluster-lang and https://github.com/zk-mohammad.
+- All duplicate copies, modified binaries, unauthorized forks, or third-party
+  distributions are strictly INVALID and unauthorized.
+- Internal compiler source code is temporarily private and will be released
+  publicly in an upcoming official release. Only official binary releases are
+  authorized for beta testing.
+
+3. COMMERCIAL USE RESTRICTIONS:
+Any use of the Software, its compiler binary, runtime components, standard library,
+or compiled output by for-profit commercial entities, corporate enterprises, or
+startups for revenue-generating operations, commercial products, proprietary
+closed-source services, or SaaS offerings requires a valid commercial license from
+the copyright holder.
+
+To request a commercial license, contact: zkalamgir@proton.me
+
+4. CONTRIBUTIONS & ZERO-DEPENDENCY GUARANTEE:
+All contributions to this repository and standard libraries must be written in
+100% pure Cluster without external C/C++ third-party library dependencies, ensuring
+deterministic standalone portability across x86-64, ARM, and embedded architectures.
+
+5. WARRANTY DISCLAIMER:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
